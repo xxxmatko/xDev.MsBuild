@@ -1,6 +1,6 @@
 # Target-y pre MSBuild
 
-<table border="0" cellpadding="3" cellspacing="0" width="90%">
+<table border="0" cellpadding="3" cellspacing="0" width="100%">
     <tr>
         <th align="left" width="190">
             Target
