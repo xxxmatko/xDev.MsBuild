@@ -1,0 +1,79 @@
+<!--
+  TransformXml Target.
+  
+  v1.0.0.0306
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+    <!-- 
+      Name of the file which should be transformed. 
+      The default is 'Build'. 
+    -->
+		<XmlTransformFileName Condition="'$(XmlTransformFileName)' == ''">Build</XmlTransformFileName>
+    <!-- 
+      Extension of the file which should be transformed. 
+      The default is '.config'. 
+    -->
+    <XmlTransformFileExtension Condition="'$(XmlTransformFileExtension)' == ''">config</XmlTransformFileExtension>
+    <!-- 
+      Name of the source xml file. It is combination of XmlTransformFileName and XmlTransformFileExtension. 
+      The default is 'Build.config'. 
+    -->
+    <XmlTransformingFile Condition="'$(XmlTransformingFile)' == ''">$(XmlTransformFileName).$(XmlTransformFileExtension)</XmlTransformingFile>
+    <!-- 
+      Name of the xml transformation file. It is combination of the previous two, and the name of the current configuration. 
+      The default is 'Build.Debug.config'. 
+    -->
+    <XmlTransformationFile Condition="'$(XmlTransformationFile)' == ''">$(XmlTransformFileName).$(Configuration).$(XmlTransformFileExtension)</XmlTransformationFile>
+  </PropertyGroup>
+  
+  <!-- Import of the Web Publishing tasks. These tasks are used for the transformation itself. -->
+  <UsingTask TaskName="TransformXml" AssemblyFile="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\Web\Microsoft.Web.Publishing.Tasks.dll" />
+  
+  <!-- Target which transforms target xml config file using specified transformation file. -->
+  <PropertyGroup>
+    <TransformXmlFileTargetDependsOn>
+      BeforeTransformXmlFileTarget;
+      CheckTransformingFileExistenceTarget;
+      CheckTransformationFileExistenceTarget;
+    </TransformXmlFileTargetDependsOn>
+  </PropertyGroup>
+  <Target Name="TransformXmlFileTarget" DependsOnTargets="$(TransformXmlFileTargetDependsOn)">
+    <TransformXml Source="$(XmlTransformingFile)" Destination="$(IntermediateOutputPath)$(XmlTransformingFile)" Transform="$(XmlTransformationFile)" />
+  </Target>
+
+  <!-- Target which fires before TransformXmlFileTarget. -->
+  <Target Name="BeforeTransformXmlFileTarget">
+    <Message Importance="high" Text="Transforming xml file '$(XmlTransformingFile)' using transformation '$(XmlTransformationFile)'." />    
+  </Target>
+  
+  <!-- Target which checks if the transforming file exists. -->
+  <Target Name="CheckTransformingFileExistenceTarget">
+    <Error Condition="!exists('$(XmlTransformingFile)')" ContinueOnError="false" Text="Transforming file '$(XmlTransformingFile)' does not exist."  />
+  </Target>
+
+  <!-- Target which checks if the transformation file exists. -->
+  <Target Name="CheckTransformationFileExistenceTarget">
+    <Error Condition="!exists('$(XmlTransformationFile)')" ContinueOnError="false" Text="Transformation file '$(XmlTransformationFile)' does not exist."  />
+  </Target>
+  
+  <!-- Target which reassigns the transformed xml file as the app configuration file. This makes the result of the transformation a part of the publish process. -->
+  <PropertyGroup>
+    <ReassignTransformedXmlToAppConfigTargetDependsOn>
+      CheckTransformedFileExistenceTarget;
+    </ReassignTransformedXmlToAppConfigTargetDependsOn>
+  </PropertyGroup>
+  <Target Name="ReassignTransformedXmlToAppConfigTarget" DependsOnTargets="$(ReassignTransformedXmlToAppConfigTargetDependsOn)">
+    <ItemGroup>
+      <AppConfigWithTargetPath Remove="$(XmlTransformingFile)" />
+      <AppConfigWithTargetPath Include="$(IntermediateOutputPath)$(XmlTransformingFile)">
+        <TargetPath>$(XmlTransformingFile)</TargetPath>
+      </AppConfigWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <!-- Target which checks if the transformed file exists. -->
+  <Target Name="CheckTransformedFileExistenceTarget">
+    <Error Condition="!exists('$(IntermediateOutputPath)$(XmlTransformingFile)')" ContinueOnError="false" Text="Transformed file '$(IntermediateOutputPath)$(XmlTransformingFile)' does not exist."  />
+  </Target>
+</Project>
