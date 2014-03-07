@@ -1,0 +1,22 @@
+<!--
+  Ensures that before each build all linked content files will be copied to the project folder.
+  
+  v1.0.0.0307
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Modify the list of targets which build depends on. Other way is to use 'BeforeTargets="Build"' on the target itself. -->
+  <PropertyGroup>
+    <BuildDependsOn>
+      CopyLinkedContentFilesTarget;
+      $(BuildDependsOn);
+    </BuildDependsOn>
+  </PropertyGroup>
+  
+  <!-- Target which copies all linked content files to the project directory. -->
+  <Target Name="CopyLinkedContentFilesTarget">
+    <Message Importance="high" Text="Copying linked content files:" />
+    <Message Importance="high" Text="%09%(Content.Identity) -&gt; %(Content.Link)" Condition="'%(Content.Link)' != ''" />
+    <Copy SourceFiles="%(Content.Identity)" DestinationFiles="%(Content.Link)" SkipUnchangedFiles='false' 
+          OverwriteReadOnlyFiles='true' Condition="'%(Content.Link)' != ''" />
+  </Target>
+</Project>

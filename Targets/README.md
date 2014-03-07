@@ -9,6 +9,14 @@
             Popis
         </th>
     </tr>
+	<tr>
+        <td>
+            CopyLinkedContentFiles
+        </td>
+        <td>
+            Target pre automatické skopírovanie prilinkovaných súborov do adresárovej štruktúry projektu.
+        </td>
+    </tr>	
     <tr>
         <td>
             TransformXml
