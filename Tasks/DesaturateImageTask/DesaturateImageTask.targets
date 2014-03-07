@@ -1,0 +1,59 @@
+<!--
+  DesaturateImageTask applies Desaturate filter on the input image file.
+  
+  v1.0.0.0307
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="DesaturateImageTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <!-- Path to the input file. -->
+      <SourceFile ParameterType="System.String" Required="true" />
+      <!-- Path to the output file. -->
+      <TargetFile ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Drawing" />
+      <Using Namespace="System" />
+      <Using Namespace="System.Drawing" />
+      <Using Namespace="System.Drawing.Imaging" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+			    // Read original file
+			    using(var bmp = Bitmap.FromFile(this.SourceFile))
+			    {
+				    // Create a blank bitmap the same size as original
+				    using(var bwBmp = new Bitmap(bmp.Width, bmp.Height))
+				    {
+					    // Get a graphic object from the new image
+					    using(var canvas = Graphics.FromImage(bwBmp))
+					    {
+						    // Create the grayscale ColorMatrix
+						    var colorMatrix = new ColorMatrix(new[]
+						    {
+							     new[] {.3f, .3f, .3f, 0f, 0f},
+							     new[] {.59f, .59f, .59f, 0f, 0f},
+							     new[] {.11f, .11f, .11f, 0f, 0f},
+							     new[] {0f, 0f, 0f, 1f, 0f},
+							     new[] {0f, 0f, 0f, 0f, 1f}
+						    });
+
+						    // Create some image attributes
+						    var attributes = new ImageAttributes();
+
+						    // Set the color matrix attribute
+						    attributes.SetColorMatrix(colorMatrix);
+
+						    // Draw the original image on the new image using the grayscale color matrix
+						    canvas.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, bmp.Width, bmp.Height, GraphicsUnit.Pixel, attributes);
+
+						    // Save file
+						    bwBmp.Save(this.TargetFile);
+					    }
+				    }
+			    }				
+		    ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
