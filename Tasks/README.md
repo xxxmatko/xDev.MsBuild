@@ -19,6 +19,14 @@
     </tr>	
 	<tr>
         <td>
+            ImagesToBase64Task
+        </td>
+        <td>
+            Vyhľadá vo vstupných css súboroch všetky referencie na lokálne obrázky, a nahradí ich za base64 string-y.
+        </td>
+    </tr>	
+	<tr>
+        <td>
             PromptTask
         </td>
         <td>

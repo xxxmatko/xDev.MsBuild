@@ -1,0 +1,132 @@
+<!--
+  ImageToBase64Task converts image reference in each input file to base64 reference.
+  
+  v1.0.0.0307
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<!-- $(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll -->
+
+  <UsingTask TaskName="ImagesToBase64Task" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- List of files to proccess -->
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <!-- List of processed images -->
+      <Images ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          Console.Beep(800, 300);
+          
+          if (this.Files == null)
+          {
+            return false;
+          }
+          
+          try 
+          {
+            Log.LogMessage(MessageImportance.High, "Converting images to base64 strings in files:");
+            
+            // Create regex to find image referencies
+            var imgUrlRegEx = new Regex(@"(background-image|data-uri):\s?url\(('|"")?(?<url>\S|[^'""]+)('|"")?\)\s?(?<isImportant>!important)?;", RegexOptions.IgnoreCase);
+            
+            // List of all replaced images
+            var images = new List<string>();
+            
+            // Process all input files
+            foreach(var file in this.Files)
+            {
+              // Get file path
+              string filePath = file.GetMetadata("Identity").Replace("\\\\", "\\");
+              
+              // Read file content
+              string content = File.ReadAllText(filePath);
+              
+              // If there is not any image reference than continue to the next file
+              if (!imgUrlRegEx.IsMatch(content))
+              {
+                continue;
+              }
+              
+              Log.LogMessage(MessageImportance.High, "\t{0}", filePath);
+              
+              // Replace all image referencies in the target files for the base64 strings
+              content = imgUrlRegEx.Replace(content, (Match m) =>
+              {
+                // Get image relative path
+                string url = m.Groups["url"].Value;
+                bool isImportant = !string.IsNullOrEmpty(m.Groups["isImportant"].Value); 
+
+                //Log.LogMessage(MessageImportance.High, "\t\t{0}", url);
+                string extension = Path.GetExtension(url);
+
+                // Path to the css file in segments
+                var filePathSegments = new Stack<string>(filePath.Split('\\'));
+                filePathSegments.Pop();
+
+                // Path to the image in segments
+                var urlSegments = new Queue<string>(url.Split('/'));
+                    
+                while((urlSegments.Count > 0) && (urlSegments.Peek().StartsWith(".")))
+                {
+                  filePathSegments.Pop();
+                  urlSegments.Dequeue();
+                }
+
+                // Path to the image is combination of the stylesheet file path and the relative path to the image
+                string imgUrl = string.Join(@"\", filePathSegments.Reverse().Union(urlSegments));
+
+                // If the image does not exist than proccess another one
+                if(!File.Exists(imgUrl))
+                {
+                  return m.Value;
+                }
+                
+                // Store the image url
+                if(!images.Contains(imgUrl)) 
+                {
+                  images.Add(imgUrl);
+                }
+                
+                // Read image
+                string imgData = imgUrl;
+                using(var imgFile = new FileStream(imgUrl, FileMode.Open, FileAccess.Read))
+                {
+                  byte[] imgBytes = new byte[imgFile.Length];
+                  imgFile.Read(imgBytes, 0, Convert.ToInt32(imgBytes.Length));
+                  imgData = Convert.ToBase64String(imgBytes, Base64FormattingOptions.None);
+                }                                
+
+                // Replace the original image reference for the base64 reference
+                return string.Format("background-image: url('data:image/{0};base64,{1}'){2};", extension.Substring(1), imgData, isImportant ? " !important" : "");
+              });
+                    
+              // Replace the original stylesheet content
+              File.WriteAllText(filePath, content);              
+            }
+            
+            // Create list of processed images
+            var processedImages = new ArrayList();
+            foreach(var img in images)
+            {
+              processedImages.Add((ITaskItem)new TaskItem(img));
+            }
+            this.Images = (ITaskItem[])processedImages.ToArray(typeof(ITaskItem));
+            
+            return true;
+          }
+          catch(Exception ex) 
+          {
+            Log.LogError(ex.Message);
+            return false;
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>

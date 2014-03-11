@@ -1,0 +1,7 @@
+﻿span.flower {
+    background-image:url("Images/flowers.jpg");
+}
+
+span.nature {
+    data-uri:url('Images/nature.jpg') !important;
+}
