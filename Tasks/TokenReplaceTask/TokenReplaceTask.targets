@@ -1,0 +1,84 @@
+<!--
+  TokenReplaceTask replaces all input tokens for the specified strings.
+  
+  v1.0.0.0311
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="TokenReplaceTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- List of files to proccess -->
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <!-- List of tokens with their replacements -->
+      <Tokens ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="false" />
+      <!-- Specific token to replace -->
+      <Token ParameterType="System.String" Required="false" />
+      <!-- Token replacement -->
+      <Replacement ParameterType="System.String" Required="false" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (this.Files == null)
+          {
+            return false;
+          }
+          
+          try 
+          {
+            Log.LogMessage(MessageImportance.High, "Replacing tokens in files:");
+            
+            // Process all input files
+            foreach(var file in this.Files)
+            {
+              // Get file path
+              string filePath = file.GetMetadata("Identity").Replace("\\\\", "\\");
+            
+              Log.LogMessage(MessageImportance.High, "\t{0}", filePath);
+            
+              // Read file content
+              string content = File.ReadAllText(filePath);
+    
+              // Replace token
+              if(content.IndexOf(this.Token) != -1)
+              {
+    					  content = content.Replace(this.Token, this.Replacement);
+                Log.LogMessage(MessageImportance.High, "\t\t{0} -> {1}", this.Token, this.Replacement);
+              }
+              
+              // If there are more tokens and process all of them
+              if (this.Tokens != null)
+              {
+                foreach(var token in this.Tokens)
+                {
+                  string t = token.GetMetadata("Identity");
+                  string r = token.GetMetadata("Replacement");
+
+                  // Replace token
+                  if(content.IndexOf(t) != -1)
+                  {
+    					      content = content.Replace(t, r);
+                    Log.LogMessage(MessageImportance.High, "\t\t{0} -> {1}", t, r);
+                  }                  
+                }
+              }
+              
+              // Replace the original stylesheet content
+              File.WriteAllText(filePath, content);              
+            }
+            
+            return true;
+          }
+          catch(Exception ex) 
+          {
+            Log.LogError(ex.Message);
+            return false;
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>

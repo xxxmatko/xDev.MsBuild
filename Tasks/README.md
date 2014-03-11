@@ -33,4 +33,12 @@
             Task, ktorý vyzve užívateľa, aby zadal vstup. Pokiaľ nezadá vstup bude build pozastavený.
         </td>
     </tr>		
+	<tr>
+        <td>
+            TokenReplaceTask
+        </td>
+        <td>
+            Vo vstupných súboroch nahradí zadaný token/y.
+        </td>
+    </tr>			
 </table>
