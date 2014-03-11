@@ -4,8 +4,6 @@
   v1.0.0.0307
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<!-- $(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll -->
-
   <UsingTask TaskName="ImagesToBase64Task" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
     <ParameterGroup>
       <!-- List of files to proccess -->
@@ -21,8 +19,6 @@
       <Using Namespace="System.Linq" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-          Console.Beep(800, 300);
-          
           if (this.Files == null)
           {
             return false;
