@@ -17,4 +17,12 @@
             Task, ktorý aplikuje Desaturate filter na vstupný obrázok.
         </td>
     </tr>	
+	<tr>
+        <td>
+            PromptTask
+        </td>
+        <td>
+            Task, ktorý vyzve užívateľa, aby zadal vstup. Pokiaľ nezadá vstup bude build pozastavený.
+        </td>
+    </tr>		
 </table>

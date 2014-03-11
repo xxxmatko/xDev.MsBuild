@@ -1,0 +1,95 @@
+<!--
+  PromptTask displays prompt to the user.
+  
+  v1.0.0.0311
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<!-- $(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll -->
+
+  <UsingTask TaskName="PromptTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- Form title -->
+      <Title ParameterType="System.String" Required="false" />
+      <!-- Message which will be displayed to the user -->
+      <Message ParameterType="System.String" Required="true" />
+      <!-- Default value for the input box -->
+      <DefaultValue ParameterType="System.String" Required="false" />
+      <!-- If set to true a beep will be made in order to notice the user -->
+      <Beep ParameterType="System.Boolean" Required="false" />
+      <!-- Result for the user input -->
+      <Result ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Drawing" />
+      <Reference Include="System.Windows.Forms" />
+      <Using Namespace="System" />
+      <Using Namespace="System.Drawing" />
+      <Using Namespace="System.Windows.Forms" />
+	    <Using Namespace="System.IO"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          // Make beeb
+          if(this.Beep) 
+          {
+            Console.Beep(800, 300);
+          }
+          
+          this.Title = string.IsNullOrEmpty(this.Title) ? " " : this.Title;
+          
+          // Create form instance
+          var prompt = new Form()
+          {
+            ControlBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Width = 500,
+            Height = 150,
+            Text = this.Title
+          };                      
+                      
+          // Create label  
+          var textLabel = new Label() 
+          {
+            Left = 10, 
+            Top = 10, 
+            TabIndex = 0,
+            Size = new Size(460, 13),
+            Text = this.Message
+          };
+          prompt.Controls.Add(textLabel);
+          
+          // Create textbox
+          var textBox = new TextBox() 
+          { 
+            Left = 10, 
+            Top = 35, 
+            TabIndex = 1,
+            Size = new Size(460, 20),
+            Text = this.DefaultValue,
+            BorderStyle = BorderStyle.FixedSingle
+          };
+          prompt.Controls.Add(textBox);
+          
+          // Create ok button
+          var btnConfirm = new Button() 
+          { 
+            Text = "Ok", 
+            Left = 370, 
+            Width = 100, 
+            Top = 75,
+            UseVisualStyleBackColor = true,
+            FlatStyle = FlatStyle.System
+          };
+          btnConfirm.Click += (sender, e) => 
+          { 
+            prompt.Close(); 
+          };
+          prompt.Controls.Add(btnConfirm);
+          prompt.ShowDialog();
+          
+          prompt.Dispose();
+          this.Result = textBox.Text;
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
