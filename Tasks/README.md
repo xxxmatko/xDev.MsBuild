@@ -40,5 +40,13 @@
         <td>
             Vo vstupných súboroch nahradí zadaný token/y.
         </td>
-    </tr>			
+    </tr>	
+	<tr>
+        <td>
+            UploadFileTask
+        </td>
+        <td>
+            Task pre upload súborov.
+        </td>
+    </tr>	
 </table>

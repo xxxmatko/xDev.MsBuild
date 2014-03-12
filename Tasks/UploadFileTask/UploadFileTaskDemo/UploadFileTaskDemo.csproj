@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4C4F6097-D0D9-49B7-9EB5-F4CD123DB9AD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UploadFileTaskDemo</RootNamespace>
+    <AssemblyName>UploadFileTaskDemo</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\flowers.jpg" />
+    <Content Include="Images\nature.jpg" />
+    <Content Include="TextFile.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+<!-- Import of the task -->
+  <Import Project="..\UploadFileTask.targets" />
+  
+  <!-- Upload images -->
+  <Target Name="AfterBuild">
+    <!-- Get list of all images -->
+	<ItemGroup>
+      <Images Include="Images\**\*.jpg" />
+    </ItemGroup>
+	
+	<!-- Upload multiple files -->
+	<UploadFileTask Files="@(Images)" Url="http://localhost:58025/UploadHandler.ashx">
+		<Output TaskParameter="Response" ItemName="ResponseStatus" />
+	</UploadFileTask>
+	
+	<!-- Upload just one file -->
+	<UploadFileTask Files="TextFile.txt" Url="http://localhost:58025/UploadHandler.ashx">
+		<Output TaskParameter="Response" ItemName="ResponseStatus" />
+	</UploadFileTask>
+	
+	<!-- Display upload result status -->
+	<Message Importance="high" Text="Upload status:" />
+	<Message Importance="high" Text="%09%(ResponseStatus.Identity) : %(ResponseStatus.Response)" />
+  </Target>
+</Project>

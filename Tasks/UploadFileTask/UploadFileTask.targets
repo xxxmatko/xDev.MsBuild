@@ -1,0 +1,85 @@
+<!--
+  UploadFileTask uploads input files to the specified URI using specified method.
+  
+  v1.0.0.0312
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="UploadFileTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- List of files to upload -->
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <!-- Upload handler url -->
+      <Url ParameterType="System.String" Required="true" />
+      <!-- Upload method -->
+      <Method ParameterType="System.String" Required="false" />
+      <!-- Response messages -->
+      <Response ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Net" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (this.Files == null)
+          {
+            return false;
+          }
+          
+          if(string.IsNullOrEmpty(this.Method))
+          {
+            this.Method = "POST";
+          }
+          
+          try 
+          {
+            Log.LogMessage(MessageImportance.High, "Uploading files:");
+            
+            // Create response results
+            var responseList = new ArrayList();
+            
+            // Process all input files
+            foreach(var file in this.Files)
+            {
+              // Get file path
+              string filePath = file.GetMetadata("Identity").Replace("\\\\", "\\");
+              Log.LogMessage(MessageImportance.High, "\t{0}", filePath);
+              
+              // Create response item
+              var responseItem = new TaskItem(filePath);
+              
+              try
+              {
+                // Upload file to the server
+                using (var client = new WebClient())
+                {
+                  byte[] response = client.UploadFile(this.Url, this.Method, filePath);
+                  responseItem.SetMetadata("Response", client.Encoding.GetString(response));
+                }
+              }
+              catch(Exception uploadEx)
+              {
+                responseItem.SetMetadata("Response", uploadEx.Message);
+              }
+              finally
+              {
+                responseList.Add((ITaskItem)responseItem);
+              }
+            }
+            
+            // Set response to the output
+            this.Response = (ITaskItem[])responseList.ToArray(typeof(ITaskItem));
+            
+            return true;
+          }
+          catch(Exception ex) 
+          {
+            Log.LogError(ex.Message);
+            return false;
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
