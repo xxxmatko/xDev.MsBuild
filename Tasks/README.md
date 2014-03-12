@@ -19,6 +19,14 @@
     </tr>	
 	<tr>
         <td>
+            GetSolutionProjectsTask
+        </td>
+        <td>
+            Task, ktorý pre zadaný solution vráti zoznam referencovaných projektov.
+        </td>
+    </tr>	
+	<tr>
+        <td>
             ImagesToBase64Task
         </td>
         <td>

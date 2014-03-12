@@ -1,0 +1,71 @@
+<!--
+  GetSolutionProjectsTask gets list of all solution projects.
+  
+  v1.0.0.0312
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="GetSolutionProjectsTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- Path to the solution file -->
+      <Solution ParameterType="System.String" Required="true" />
+      <!-- List of all solution projects -->
+      <Projects ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+	    <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (!File.Exists(this.Solution))
+          {
+            Log.LogError(string.Format(@"Solution '{0}' does not exist.", this.Solution));
+            return false;
+          }          
+          
+          // Get solution folder
+          string solutionFolder = Path.GetDirectoryName(this.Solution);
+          
+          // Read solution file content
+          string content = File.ReadAllText(this.Solution);
+          
+          // Init output project list
+          var projects = new List<ITaskItem>();
+          
+          // Find all project referencies
+          var matches = Regex.Matches(content, @"Project\(""(?<typeGuid>.+?)""\)\s*=\s*""(?<name>.+?)""\s*,\s*""(?<file>.+?)""\s*,\s*""(?<guid>.+?)""");
+          
+          // Get all projects
+          foreach(Match match in matches)
+          {
+            // Get project type
+            string typeGuid = match.Groups["typeGuid"].Value;
+          
+          	// Skip Solution Folders
+            if (typeGuid.Equals("{2150E333-8FDC-42A3-9474-1A3956D46DE8}", StringComparison.OrdinalIgnoreCase))
+            {
+              continue;
+            }
+
+            string relativePath = match.Groups["file"].Value;
+            string name = match.Groups["name"].Value;
+            string guid = match.Groups["guid"].Value;
+            
+            // Create project item
+            ITaskItem project = new TaskItem(Path.Combine(solutionFolder, relativePath));
+            project.SetMetadata("Path", relativePath);
+            project.SetMetadata("Name", name);
+            project.SetMetadata("Guid", guid);
+            project.SetMetadata("TypeGuid", typeGuid);
+            projects.Add(project);
+          }
+          
+          // Return projects
+          this.Projects = projects.ToArray();
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
