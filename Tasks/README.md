@@ -16,7 +16,15 @@
         <td>
             Task, ktorý aplikuje Desaturate filter na vstupný obrázok.
         </td>
-    </tr>	
+    </tr>
+	<tr>
+        <td>
+            GetItemMetadataTask	
+        </td>
+        <td>
+            Task, ktorý pre vstupný ItemGroup vráti zoznam jeho metadata keys.
+        </td>
+    </tr>
 	<tr>
         <td>
             GetSolutionProjectsTask

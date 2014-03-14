@@ -1,0 +1,62 @@
+<!--
+  GetItemMetadataTask gets all metadata keys for input items and returns them as string.
+  
+  v1.0.0.0314
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="GetItemMetadataTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- List of items to process -->
+      <Items ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <!-- List of metadat keys -->
+      <Metadata ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (this.Items == null)
+          {
+            return false;
+          }
+          
+          try 
+          {
+            // List of all metadata keys
+            var keys = new List<string>();
+            
+            // Process all items
+            foreach(var item in this.Items)
+            {
+              // Process all item metadata keys
+              foreach (string key in item.MetadataNames)
+              {
+                if(keys.Contains(key))
+                {
+                  continue;
+                }
+                
+                // Store the actual metadata key
+                keys.Add(key);
+              }
+            }
+            
+            // Return metadata keys
+            this.Metadata = keys
+              .Select(k => new TaskItem(k))
+              .ToArray();
+            
+            return true;
+          }
+          catch(Exception ex) 
+          {
+            Log.LogError(ex.Message);
+            return false;
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
