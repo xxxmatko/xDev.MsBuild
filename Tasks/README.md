@@ -11,6 +11,14 @@
     </tr>
 	<tr>
         <td>
+            AddAssemblyResolveHandlerTask
+        </td>
+        <td>
+            Task, ktorý pridá handler pre AppDomain.CurrentDomain.AssemblyResolve event a umožní tak v inline taskoch použitie custom assemblies.
+        </td>
+    </tr>	
+	<tr>
+        <td>
             DesaturateImageTask
         </td>
         <td>

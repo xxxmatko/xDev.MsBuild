@@ -1,0 +1,34 @@
+<!--
+  AddAssemblyResolveHandlerTask adds handler for AppDomain.CurrentDomain.AssemblyResolve event and enables
+  to load assemblies from custom folders.
+  
+  v1.0.0.0325
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="AddAssemblyResolveHandlerTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- Directory where to find assemblies -->
+      <Directory ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Reflection" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          Log.LogMessage(MessageImportance.High, "Adding assembly resolve folder '{0}'.", this.Directory);
+          AppDomain.CurrentDomain.AssemblyResolve += (object sender, ResolveEventArgs e) =>
+          {
+              string assemblyPath = Path.Combine(this.Directory, new AssemblyName(e.Name).Name + ".dll");
+              if (File.Exists(assemblyPath) == false) 
+              {
+                return null;
+              }
+
+              return Assembly.LoadFrom(assemblyPath);
+          };
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+ </Project>
