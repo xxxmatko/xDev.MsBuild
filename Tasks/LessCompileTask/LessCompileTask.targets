@@ -1,0 +1,167 @@
+<!--
+  LessCompileTask compiles input less files into css files.
+  
+  v1.0.0.0325
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="LessCompileTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <!-- List of files to compile -->
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <!-- List of target files -->
+      <TargetFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <!-- If set to true all imported files will be deleted -->
+      <DeleteImportedFiles ParameterType="System.Boolean" />
+      <!-- List of all output css files -->
+      <OutputFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="dotless.Core" />
+      <!--<Reference Include="$(SolutionDir)\dotless.Core.dll" />-->
+      <!--<Reference Include="$(MSBuildBinPath)\dotless.Core.dll"/>-->
+      <!--<Reference Include="$(MSBuildBinPath)\Microsoft.Build.Framework.dll"/>-->
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Using Namespace="System.Reflection" />
+      <Using Namespace="dotless.Core" />
+      <Using Namespace="dotless.Core.configuration" />
+      <Using Namespace="dotless.Core.Parser" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if ((this.Files == null) || (this.TargetFiles == null))
+          {
+            return false;
+          }
+          
+          if (this.Files.Length != this.TargetFiles.Length)
+          {
+            Log.LogError("Count of 'Files' and 'TargetFiles' must match.");
+          }
+                    
+          // Regex for finding imports
+          var importRegex = new Regex(@"@import\s[""'](?<fileName>[\w.]+)[""'];?", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+          
+          // List of all less imports
+          var imports = new List<string>();
+          
+          // Init output file list
+          var outputFiles = new List<ITaskItem>();
+
+          // Remember current working directory
+          string oldCurrentDir = Directory.GetCurrentDirectory();
+
+          try 
+          {
+            Log.LogMessage(MessageImportance.High, "Compiling less files:");
+            
+            // Process all input files
+            for(int i = 0; i < this.Files.Length; i++)
+            {
+              // Get file and target file
+              var file = this.Files[i];
+              var targetFile = this.TargetFiles[i];
+            
+              // Get file path
+              string filePath = file.GetMetadata("Identity").Replace("\\\\", "\\");
+              string targetFilePath = targetFile.GetMetadata("Identity").Replace("\\\\", "\\");
+              Log.LogMessage(MessageImportance.High, "\t{0} -> {1}", filePath, targetFilePath);
+              
+              // Read less file conent
+              string content = File.ReadAllText(filePath);
+
+              // Get and set the working directory for the current file
+              string workingDir = Path.GetDirectoryName(file.GetMetadata("FullPath"));
+              Directory.SetCurrentDirectory(workingDir);
+
+              // Compile less content into css
+              string cssContent = Less.Parse(content, DotlessConfiguration.GetDefault());
+
+              // Restore working directory
+              Directory.SetCurrentDirectory(oldCurrentDir);
+
+              // Check if file contains imports
+              if (importRegex.IsMatch(content))
+              {
+                foreach (Match match in importRegex.Matches(content))
+                {
+                  string matchedImport = match
+                    .Groups["fileName"]
+                    .Value
+                    .Replace(".less", "");
+                  if (string.IsNullOrEmpty(matchedImport) || imports.Contains(matchedImport))
+                  {
+                    continue;
+                  }
+                  imports.Add(matchedImport);
+                }
+              }
+              
+              // If there is no css output continue
+              if(string.IsNullOrEmpty(cssContent))
+              {
+                continue;
+              }
+              
+              // Ensure output directory
+              Directory.CreateDirectory(Path.GetDirectoryName(targetFilePath));
+              
+              // Write compiled less to css file
+              File.WriteAllText(targetFilePath, cssContent);
+              
+              ITaskItem outputFile = new TaskItem(targetFilePath);
+              outputFile.SetMetadata("Name", Path.GetFileNameWithoutExtension(targetFilePath));
+              outputFile.SetMetadata("SourceFile", filePath);
+              outputFiles.Add(outputFile);
+            }
+            
+            // If user do not want to delete import files exit
+            if(!this.DeleteImportedFiles)
+            {
+              // Return output files
+              this.OutputFiles = outputFiles.ToArray();
+              return true;
+            }
+            
+            // Modify the output files collection
+            for(int i = 0; i < outputFiles.Count; i++)
+            {
+              // Get current output file
+              ITaskItem oFile = outputFiles[i];
+              
+              // Get output name
+              string oName = oFile.GetMetadata("Name");
+              
+              // Get output identity
+              string oIdentity = oFile.GetMetadata("Identity");
+              
+              // Check if the output file was imported by another file
+              if(imports.Any(imp => imp.Equals(oName))) 
+              {
+                // Delete output file
+                if(File.Exists(oIdentity))
+                {
+                  File.Delete(oIdentity);
+                }
+                
+                // Mark current output file as null it is not the real output
+                outputFiles[i] = null;
+              }
+            }
+            
+            // Return output files
+            this.OutputFiles = outputFiles.Where(of => of != null).ToArray();
+            return true;
+          }
+          catch(Exception ex) 
+          {
+            Log.LogError(ex.Message);
+            return false;
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>

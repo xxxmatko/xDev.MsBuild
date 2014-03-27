@@ -1,0 +1,23 @@
+﻿@import "StyleSheet._Variables";
+@import "StyleSheet._Mixins";
+
+.@{base-class}-popupContainer {
+    .border-box;
+    margin: 0 0 0 -1px;
+    clear: both;
+    display: none;
+    position: absolute;
+    z-index: 1;
+    data-uri:url('Images/nature.jpg'); 
+           
+    > span {
+        .border-box;
+        overflow-x: hidden;
+        overflow-y: auto;
+        clear: both;
+        display: block;
+        padding: 1px;
+    }
+}
+
+@import "AnotherStyle";

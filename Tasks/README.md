@@ -51,6 +51,14 @@
     </tr>	
 	<tr>
         <td>
+            LessCompileTask
+        </td>
+        <td>
+            Task pre skompilovanie less súborov do css.
+        </td>
+    </tr>		
+	<tr>
+        <td>
             PromptTask
         </td>
         <td>

@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5AF5FB95-CAB2-4150-BE59-C54FE07D8DB5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LessCompileTaskDemo</RootNamespace>
+    <AssemblyName>LessCompileTaskDemo</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <LessFile Include="Styles\AnotherStyle.less" />
+    <LessFile Include="Styles\StyleSheet.less" />
+    <LessFile Include="Styles\StyleSheet._Mixins.less" />
+    <LessFile Include="Styles\StyleSheet._Variables.less" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Styles\Images\flowers.jpg" />
+    <Content Include="Styles\Images\nature.jpg" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <!-- Import of the task -->
+  <Import Project="..\..\AddAssemblyResolveHandlerTask\AddAssemblyResolveHandlerTask.targets" />
+  <Import Project="..\LessCompileTask.targets" />
+  <Target Name="AfterBuild">
+    <!-- Add solution folder to the list of folders which holds assemblies -->
+    <AddAssemblyResolveHandlerTask Directory="$(SolutionDir)" />
+    <!-- Compile less files -->
+    <LessCompileTask Files="@(LessFile)" TargetFiles="@(LessFile->'$(OutputPath)%(RelativeDir)%(FileName).css')" DeleteImportedFiles="true">
+      <Output TaskParameter="OutputFiles" ItemName="OutputFiles" />
+    </LessCompileTask>
+    <!-- Print out output files -->
+    <Message Importance="high" Text="Output files:" />
+    <Message Importance="high" Text="%09%(OutputFiles.Identity) %0D%0A%09%09 Name: %(OutputFiles.Name) %0D%0A%09%09 SourceFile: %(OutputFiles.SourceFile)" />
+  </Target>
+</Project>
