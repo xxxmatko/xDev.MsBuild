@@ -27,6 +27,14 @@
     </tr>
 	<tr>
         <td>
+            GetEnvironmentVariableTask
+        </td>
+        <td>
+            Task, pre načítanie obsahu premnnej prostredia.
+        </td>
+    </tr>
+	<tr>
+        <td>
             GetItemMetadataTask	
         </td>
         <td>

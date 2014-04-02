@@ -1,0 +1,34 @@
+<!--
+  GetEnvironmentVariableTask gets the environment variable.
+  
+  v1.0.0.0402
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="GetEnvironmentVariableTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <!-- Name of the property -->
+      <Name ParameterType="System.String" Required="true" />
+      <!-- Environment target -->
+      <Target ParameterType="System.String" Required="false" />
+      <!-- Variable value -->
+      <Value ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          // Get target setting
+          EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine;
+          if(!EnvironmentVariableTarget.TryParse(this.Target, true, out target))
+          {
+            target = EnvironmentVariableTarget.Machine;
+          }
+          
+          // Read and set the return value
+          this.Value = Environment.GetEnvironmentVariable(this.Name, target);
+          return true;
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
