@@ -16,7 +16,15 @@
         <td>
             Target pre automatické skopírovanie prilinkovaných súborov do adresárovej štruktúry projektu.
         </td>
-    </tr>	
+    </tr>
+    <tr>
+        <td>
+            GruntMvc
+        </td>
+        <td>
+            Target pre integráciu Grunt Task Runner-a do Visual Studio 2013.
+        </td>
+    </tr>
     <tr>
         <td>
             TransformXml
