@@ -87,6 +87,8 @@
     <Content Include="packages.config" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="package.json" />
+    <Content Include="gruntfile.js" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

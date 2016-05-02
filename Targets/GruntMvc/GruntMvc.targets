@@ -1,12 +1,64 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <BuildDependsOn>
-      HelloWorldTarget;
+      <!--HelloWorldTarget;-->
+      CheckNpmVersionTarget;
+      CheckPackageJsonFileExistanceTarget;
+      InstallGruntCliTarget;
+      InstallNpmPackagesTarget;
+      CheckGruntFileExistenceTarget;
+      GruntBuildTarget;
       $(BuildDependsOn);
     </BuildDependsOn>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <ConsoleOutputFile>ConsoleOutputFile.txt</ConsoleOutputFile>
+  </PropertyGroup>  
 
+  <!--
   <Target Name="HelloWorldTarget">
     <Message Text="Hello world." Importance="high" />
+  </Target>
+  -->  
+    
+  <Target Name="CheckNpmVersionTarget">
+    <Exec Command="call npm -version > $(ConsoleOutputFile)" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" >
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+    </Exec>
+    <ReadLinesFromFile File="$(ConsoleOutputFile)">
+      <Output TaskParameter="Lines" ItemName="NpmVersion" />
+    </ReadLinesFromFile>
+    <Delete Files="$(ConsoleOutputFile)"/>
+    <Error Text="Npm is not installed. The NodeJs and Npm must be installed, and the environment variable PATH must be set." Condition="'$(ErrorCode)' != '0'" />
+    <Message Text="You are running npm v@(NpmVersion->'%(Identity)', '%0a%0d')." Importance="high" />
+  </Target>
+
+  <Target Name="CheckPackageJsonFileExistanceTarget">
+    <Error Condition="!Exists('$(ProjectDir)\package.json')" Text="The file 'package.json' does not exists." />
+  </Target>
+
+  <Target Name="InstallGruntCliTarget">
+    <Message Text="Installing 'grunt-cli' package:" Importance="high" />
+    <Exec Command="call npm install -g grunt-cli > $(ConsoleOutputFile)" WorkingDirectory="$(ProjectDir)" />
+    <Delete Files="$(ConsoleOutputFile)"/>
+    <Message Text="... done" Importance="high" />
+  </Target>
+
+  <Target Name="InstallNpmPackagesTarget">
+    <Message Text="Installing npm packages:" Importance="high" />
+    <Exec Command="call npm install > $(ConsoleOutputFile)" WorkingDirectory="$(ProjectDir)" />
+    <Delete Files="$(ConsoleOutputFile)"/>
+    <Message Text="... done" Importance="high" />
+  </Target>
+
+  <Target Name="CheckGruntFileExistenceTarget">
+    <Error Condition="!Exists('$(ProjectDir)\gruntfile.js')" Text="The file 'gruntfile.js' does not exists." />
+  </Target>
+
+  <Target Name="GruntBuildTarget">
+    <Message Text="Running grunt:" Importance="high" />
+    <Exec Command="call grunt build:$(Configuration)" WorkingDirectory="$(ProjectDir)" />
+    <Message Text="... done" Importance="high" />
   </Target>
 </Project>
