@@ -1,10 +1,21 @@
-﻿<!DOCTYPE html>
+﻿@using GruntMvcDemo.Web.Mvc
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <title>GruntMvcDemo</title>
+    @if (Html.IsDebug())
+    {
+        <link rel="stylesheet" href="@Url.Content("~/css/site.css")" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="@Url.Content("~/css/site.min.css")" />
+    }
 </head>
 <body>
-    <h1>GruntMvcDemo</h1>
+    @*<h1>GruntMvcDemo</h1>*@
+    <div class="map"></div>
+    <script data-main="@Url.Content("~/js/config")" src="@Url.Content("~/js/libs/require.js")"></script>
 </body>
 </html>

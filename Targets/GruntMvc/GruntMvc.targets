@@ -5,6 +5,7 @@
       CheckNpmVersionTarget;
       CheckPackageJsonFileExistanceTarget;
       InstallGruntCliTarget;
+      InstallRimrafCliTarget;
       InstallNpmPackagesTarget;
       CheckGruntFileExistenceTarget;
       GruntBuildTarget;
@@ -14,14 +15,28 @@
   
   <PropertyGroup>
     <ConsoleOutputFile>ConsoleOutputFile.txt</ConsoleOutputFile>
-  </PropertyGroup>  
+  </PropertyGroup>
 
-  <!--
+  <PropertyGroup>
+    <PublishTargetDependsOn>
+      RenamePublishConfigurationTarget;
+      InstallNpmPublishPackagesTarget;
+      GruntPublishTarget;
+      DeletePublishTempFilesTarget;
+    </PublishTargetDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CopyAllFilesToSingleFolderForPackageDependsOn>
+      IncludeCssFilesTarget;
+      $(CopyAllFilesToSingleFolderForPackageDependsOn);
+    </CopyAllFilesToSingleFolderForPackageDependsOn>
+  </PropertyGroup>
+
   <Target Name="HelloWorldTarget">
     <Message Text="Hello world." Importance="high" />
   </Target>
-  -->  
-    
+      
   <Target Name="CheckNpmVersionTarget">
     <Exec Command="call npm -version > $(ConsoleOutputFile)" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" >
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
@@ -45,6 +60,13 @@
     <Message Text="... done" Importance="high" />
   </Target>
 
+  <Target Name="InstallRimrafCliTarget">
+    <Message Text="Installing 'rimraf' package:" Importance="high" />
+    <Exec Command="call npm install -g rimraf > $(ConsoleOutputFile)" WorkingDirectory="$(ProjectDir)" />
+    <Delete Files="$(ConsoleOutputFile)"/>
+    <Message Text="... done" Importance="high" />
+  </Target>
+
   <Target Name="InstallNpmPackagesTarget">
     <Message Text="Installing npm packages:" Importance="high" />
     <Exec Command="call npm install > $(ConsoleOutputFile)" WorkingDirectory="$(ProjectDir)" />
@@ -60,5 +82,44 @@
     <Message Text="Running grunt:" Importance="high" />
     <Exec Command="call grunt build:$(Configuration)" WorkingDirectory="$(ProjectDir)" />
     <Message Text="... done" Importance="high" />
+  </Target>
+
+  <Target Name="PublishTarget" AfterTargets="CopyAllFilesToSingleFolderForPackage" BeforeTargets="MSDeployPublish" DependsOnTargets="$(PublishTargetDependsOn)">
+  </Target>
+
+  <Target Name="RenamePublishConfigurationTarget">
+    <Move SourceFiles="$(_PackageTempDir)/js/config.$(Configuration).js" DestinationFiles="$(_PackageTempDir)/js/config.js" />
+  </Target>
+
+  <Target Name="InstallNpmPublishPackagesTarget">
+    <Message Text="Installing npm publish packages:" Importance="high" />
+    <Exec Command="call npm install > $(ConsoleOutputFile)" WorkingDirectory="$(_PackageTempDir)" />
+    <Message Text="... done" Importance="high" />
+  </Target>
+
+  <Target Name="GruntPublishTarget">
+    <Message Text="Running grunt publish:" Importance="high" />
+    <Exec Command="call grunt publish:$(Configuration)" WorkingDirectory="$(_PackageTempDir)" />
+    <Message Text="... done" Importance="high" />
+  </Target>
+
+  <Target Name="DeletePublishTempFilesTarget" >
+    <Message Importance="high" Text="Deleting publish temp files:" />
+    <Exec Command="call rimraf node_modules > $(ConsoleOutputFile)" WorkingDirectory="$(_PackageTempDir)" />
+    <Delete Files="$(_PackageTempDir)\$(ConsoleOutputFile)"/>
+    <Delete Files="$(_PackageTempDir)\packages.config" ContinueOnError="true"/>
+    <Delete Files="$(_PackageTempDir)\gruntfile.js" ContinueOnError="true"/>
+    <Delete Files="$(_PackageTempDir)\package.json" ContinueOnError="true"/>
+    <Message Text="... done" Importance="high" />
+  </Target>
+
+  <Target Name="IncludeCssFilesTarget">
+    <ItemGroup>
+      <FilesForPackagingFromProject Remove="css\**\*.css"/>
+      <_MinifiedCssFiles Include="css\**\*.min.css" />
+      <FilesForPackagingFromProject Include="%(_MinifiedCssFiles.Identity)">
+        <DestinationRelativePath>css\%(RecursiveDir)%(Filename)%(Extension)</DestinationRelativePath>
+      </FilesForPackagingFromProject>
+    </ItemGroup>
   </Target>
 </Project>

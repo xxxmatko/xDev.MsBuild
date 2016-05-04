@@ -84,11 +84,19 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="js\config.Release.js" />
+    <Content Include="js\config.js" />
+    <Content Include="js\app.js" />
+    <Content Include="js\libs\domReady.js" />
+    <Content Include="js\libs\jquery.js" />
+    <Content Include="js\libs\require.js" />
     <Content Include="packages.config" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="package.json" />
     <Content Include="gruntfile.js" />
+    <None Include="less\site.less" />
+    <None Include="Properties\PublishProfiles\GruntMvcDemo-RELEASE.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -106,6 +114,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Web\Mvc\HtmlHelperExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

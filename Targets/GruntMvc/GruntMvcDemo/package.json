@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "grunt": "^1.0.1"
+    "grunt": "^1.0.1",
+	"grunt-contrib-less": "^1.2.0",
+    "grunt-contrib-csslint": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.1",
+	"grunt-contrib-jshint": "^1.0.0",
+	"grunt-contrib-requirejs": "^1.0.0"
   }
 }
